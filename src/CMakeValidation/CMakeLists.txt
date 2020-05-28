@@ -1,0 +1,1 @@
+package_add_g_test(cmake_validation_test test_code.cpp)

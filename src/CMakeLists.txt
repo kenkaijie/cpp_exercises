@@ -1,0 +1,2 @@
+add_subdirectory(CMakeValidation)
+add_subdirectory(TemplateMetaprogramming)
