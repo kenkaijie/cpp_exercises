@@ -59,18 +59,29 @@ struct replace_type<C*[N], C, Y>
     typedef Y* type[N];
 };
 
-// 1 arg function
-template<typename Ret, typename Arg1, typename X, typename Y>
-struct replace_type<Ret(*)(Arg1), X, Y>
+// need something that takes a function type, and does the prepend of an argument, allows for changing the arguments one by one
+template<typename Function, typename NewArg>
+struct prepend_function_argument {};
+
+template<typename Ret, typename NewArg, typename... ExistingArgs>
+struct prepend_function_argument<Ret(*)(ExistingArgs...), NewArg>
 {
-    typedef typename replace_type<Ret, X, Y>::type (*type) (typename replace_type<Arg1, X, Y>::type);
+    typedef typename Ret(*type)(NewArg, ExistingArgs...);
 };
 
-// 2 arg
-template<typename Ret, typename Arg1, typename Arg2, typename X, typename Y>
-struct replace_type<Ret(*)(Arg1, Arg2), X, Y>
+// recursive case 
+template<typename Ret, typename X, typename Y, typename FirstArg, typename... Args>
+struct replace_type<Ret(*)(FirstArg, Args...), X, Y>
 {
-    typedef typename replace_type<Ret, X, Y>::type (*type) (typename  replace_type<Arg1, X, Y>::type, typename  replace_type<Arg2, X, Y>::type);
+    // typedef typename append_function_argument<Ret(*)(Args), typename replace_type<LastArg, X, Y>::type>::type type;
+    using type = typename prepend_function_argument<typename replace_type<Ret(*)(Args...), X, Y>::type, typename replace_type<FirstArg, X, Y>::type>::type;
+};
+
+// base case 1 arg
+template<typename Ret, typename X, typename Y, typename Arg1>
+struct replace_type<Ret(*)(Arg1), X, Y>
+{
+    using type = typename replace_type<Ret, X, Y>::type (*) (typename replace_type<Arg1, X, Y>::type);
 };
 
 }
